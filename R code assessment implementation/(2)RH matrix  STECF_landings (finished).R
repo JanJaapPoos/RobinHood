@@ -39,7 +39,8 @@ ggplot(data =effortbygearyear_noother) +
 ############################################
 
 #select only relevant species from STECF landings data 
-landings <- landings[landings$species %in% c("PLE","SOL", "WHG","COD","HAD","TUR","BLL", "LEM", "WIT", "DAB"),]
+relevantspecies <-  c("PLE","SOL", "WHG","COD","HAD","TUR","BLL", "LEM", "WIT", "DAB")
+landings <- landings[landings$species %in% relevantspecies,]
 
 #make all gears with small contributions into "OTHER"
 landings[landings$regulated.gear %in% c("PEL_SEINE","PEL_TRAWL", "NONE","DREDGE","POTS", "TR3","OTTER","LL1","DEM_SEINE","BEAM"),]$regulated.gear <- "OTHER"
@@ -69,6 +70,8 @@ finalyear_incl_rect$gear_rect <- paste0(finalyear_incl_rect$regulated.gear,final
 
 cortest                   <- tidyr::spread(final[,c("regulated.gear","species","frac")],key= species, value=frac)
 cortestyear               <- tidyr::spread(finalyear[,c("regulated.gear","species","year","frac")],key= species, value=frac)
+cortestyear_raw           <- tidyr::spread(lanbygearyear,key= species, value=Landings) 
+
 cortestyear_incl_veslen   <- tidyr::spread(finalyear_incl_veslen[,c("gear_vl","species","year","frac")],key= species, value=frac)
 cortestyear_incl_rect     <- tidyr::spread(finalyear_incl_rect[,c("gear_rect","species","year","frac")],key= species, value=frac)
 cortestyear_incl_rect_raw <- tidyr::spread(lanbygearrectyear,key= species, value=Landings) 
@@ -89,11 +92,11 @@ adj_col3<-c(col(200)[1:100]) #,col(100)[50:100])
 ######################################################################
 #MAKE cormatrix in species order for RH
 ##########################################################################
-tempdat <- cortestyear_incl_rect_raw[,4:13]
-tempdat <- tempdat[,c("TUR", "BLL","WIT","DAB","LEM","PLE","SOL","COD","WHG","HAD")]
-corrmatrix <- cor(tempdat,use="complete.obs")
-#rownames(corrmatrix)<-c("Turbot", "Brill", "Witch", "Dab", "Lemon sole", "Plaice", "Sole", "Cod", "Whiting", "Haddock")
+cortestyear_incl_rect_raw[is.na(cortestyear_incl_rect_raw)] <- 0
 
+usedat <- cortestyear_raw #alternative cortestyear_incl_rect_raw
+
+corrmatrix <- cor(usedat[,names(usedat) %in% relevantspecies],use="complete.obs")
 
 #par(cex=1.5)
 p2_j<-corrplot(corrmatrix,  col  =rev(adj_col2),
