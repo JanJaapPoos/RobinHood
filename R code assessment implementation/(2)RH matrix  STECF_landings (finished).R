@@ -1,9 +1,42 @@
 library(lattice); library(rasterVis); library(latticeExtra);library(corrplot)
-library(gridExtra); library(dplyr); library(tidyr);library("RColorBrewer")
+library(gridExtra); library(dplyr); library(tidyr);library("RColorBrewer"); library(ggplot2)
 
-rootPath <- "m:/robinhood/"
+rootPath <- "C://Users/poos001/OneDrive - WageningenUR/projects/RobinHood"
 
+
+#Read data (effort and landings)
 landings <- read.csv(file.path(rootPath,"data/stecf data/map__landings_by_rectangle_data.csv"), stringsAsFactors = F)
+effort <- read.csv(file.path(rootPath,"data/stecf data/effort_(hours_fished)_Full_Data_data.csv"), stringsAsFactors = F)
+
+##########################################
+# Which fleets-years effort are constant?
+############################################
+
+#make all gears with small contributions into "OTHER"
+effort[effort$regulated.gear %in% c("PEL_SEINE","PEL_TRAWL", "NONE","DREDGE","POTS", "TR3","OTTER","LL1","DEM_SEINE","BEAM"),]$regulated.gear <- "OTHER"
+
+#make aggregations (summing) for effort in area 4 and for years 
+effortbygearyear <- aggregate(Effective.Effort~regulated.gear  + year, data=subset(effort, area=="4" & year> 2003 & year <2016), FUN="sum")
+
+#for one reason or the other, the amount of effort by pots is enormous (and cannot be correct), so let's remove these
+effortbygearyear_noother <- subset(effortbygearyear, !regulated.gear == "OTHER")
+
+ggplot(data =effortbygearyear_noother) +
+  ylab("Fishing effort(x hours fished)")+
+  xlab("Years")+
+  geom_point(aes(x=year, y=Effective.Effort, colour=regulated.gear),size=1.2,alpha=1)+
+  theme_bw()+
+  geom_line(aes(x=year,y=Effective.Effort,linetype="dashed",colour=regulated.gear),linetype="22",alpha=0.8)+
+  scale_alpha_manual(guide=F)+
+  ggtitle("Estimates of Fishing effort")+
+  geom_text(data = effortbygearyear_noother %>% filter(year == last(year)), aes(label = regulated.gear, 
+                                                             x = year + 0.5, 
+                                                             y = Effective.Effort, 
+                                                             color = regulated.gear))  
+
+#############################################
+# Make association matrix from landings
+############################################
 
 #select only relevant species from STECF landings data 
 landings <- landings[landings$species %in% c("PLE","SOL", "WHG","COD","HAD","TUR","BLL", "LEM", "WIT", "DAB"),]
