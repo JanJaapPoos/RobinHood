@@ -3,7 +3,6 @@ library(gridExtra); library(dplyr); library(tidyr);library("RColorBrewer"); libr
 
 rootPath <- "C://Users/poos001/OneDrive - WageningenUR/projects/RobinHood"
 
-
 #Read data (effort and landings)
 landings <- read.csv(file.path(rootPath,"data/stecf data/map__landings_by_rectangle_data.csv"), stringsAsFactors = F)
 effort <- read.csv(file.path(rootPath,"data/stecf data/effort_(hours_fished)_Full_Data_data.csv"), stringsAsFactors = F)
@@ -89,24 +88,8 @@ adj_col3<-c(col(200)[1:100]) #,col(100)[50:100])
 #FINAL FIGURES FOR PAPER
 ##########################################################################
 
-######################################################################
-#MAKE cormatrix in species order for RH
-##########################################################################
-cortestyear_incl_rect_raw[is.na(cortestyear_incl_rect_raw)] <- 0
-
-usedat <- cortestyear_raw #alternative cortestyear_incl_rect_raw
-
-corrmatrix <- cor(usedat[,names(usedat) %in% relevantspecies],use="complete.obs")
-
-#par(cex=1.5)
-p2_j<-corrplot(corrmatrix,  col  =rev(adj_col2),
-         diag=FALSE,
-         method="color", type = "upper", order = "hclust",number.cex = 0.8,
-         cl.lim= c(-0.5,1),is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
-         tl.col = "black", tl.srt = 90, na.label = "x",tl.cex = 1.1, tl.offset = 0.4) # Text label color and rotation
-
-
-###convert data into dataframe for corrplot######here comes the second graph ##############-------
+###convert data into dataframe for corrplot
+######here comes the second graph ##############-------
 
 dat_frame_final<-final[,c(1,3,5)]%>%spread(regulated.gear,frac)
 dat_frame_final<-cbind(dat_frame_final[,1], round(dat_frame_final[,-1],2))
@@ -130,6 +113,36 @@ p1_j<-corrplot(new_matrix_final,col=rev(adj_col2),
 
 mtext(text = "Geartype", side = 2, line = 1,  cex=1.3, at = 4 )
 mtext(text = "Species", side = 1, line = 3,  cex=1.3, at = 5.5 )
+
+######################################################################
+#Select dataset to use for correlation
+##########################################################################
+#Select dataset to use
+rawcatch <- cortestyear_raw #alternative cortestyear_incl_rect_raw
+
+#####################################################################################
+#Option for correction catches by dividing by catches of ref fleet (with constant effort) 
+#####################################################################################
+
+#if cortestyear_raw then option to divide by fleet/years with constant effort (defined by refgear): ugly loop
+refgear <- "GN1"
+for(ii in unique(rawcatch$regulated.gear)){
+  tmp <- usedat[rawcatch$regulated.gear==ii,names(rawcatch) %in% relevantspecies]/rawcatch[rawcatch$regulated.gear==refgear,names(rawcatch) %in% relevantspecies]
+  tmp <- cbind(rawcatch[usedat$regulated.gear==ii,!names(rawcatch) %in% relevantspecies],tmp)
+  if (ii ==unique(rawcatch$regulated.gear)[1]){
+    corrcatch <- tmp
+  }else{
+    corrcatch <- rbind(corrcatch,tmp)
+  }
+}
+
+#####################################################################################
+#Make corr matrix (of either raw catches or corrected catches) 
+#####################################################################################
+usedat <- corrcatch[,names(corrcatch) %in% relevantspecies]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
+
+#use either usedat(for raw catches, or effort corrected catches (tmpc) (in this case for ))
+corrmatrix <- cor(usedat,use="complete.obs")
 
 p2_j<-corrplot(corrmatrix,  col  =rev(adj_col2),
                diag=FALSE,
@@ -159,8 +172,3 @@ corrplot(corrmatrix[6:10,6:10],  col  =rev(adj_col2),
          method="color", type = "upper", order = "hclust", number.cex = .9,
          cl.lim= c(-0.5,1),is.corr = FALSE, addCoef.col = "black", # Add coefficient of correlation
          tl.col = "black", tl.srt = 90, na.label = "x",tl.cex = 1.31, tl.offset = 0.4) # Text label color and rotation
-
-
-
-
-
