@@ -125,10 +125,11 @@ rawcatch <- cortestyear_raw #alternative cortestyear_incl_rect_raw
 #####################################################################################
 
 #if cortestyear_raw then option to divide by fleet/years with constant effort (defined by refgear): ugly loop
+#that is what is done below: catches are divided by the cacthes of the ref gear. That one ends up as having only 1s
 refgear <- "GN1"
 for(ii in unique(rawcatch$regulated.gear)){
-  tmp <- usedat[rawcatch$regulated.gear==ii,names(rawcatch) %in% relevantspecies]/rawcatch[rawcatch$regulated.gear==refgear,names(rawcatch) %in% relevantspecies]
-  tmp <- cbind(rawcatch[usedat$regulated.gear==ii,!names(rawcatch) %in% relevantspecies],tmp)
+  tmp <- rawcatch[rawcatch$regulated.gear==ii,names(rawcatch) %in% relevantspecies]/rawcatch[rawcatch$regulated.gear==refgear,names(rawcatch) %in% relevantspecies]
+  tmp <- cbind(rawcatch[rawcatch$regulated.gear==ii,!names(rawcatch) %in% relevantspecies],tmp)
   if (ii ==unique(rawcatch$regulated.gear)[1]){
     corrcatch <- tmp
   }else{
@@ -136,18 +137,31 @@ for(ii in unique(rawcatch$regulated.gear)){
   }
 }
 
+#sum multiplication factors of catches by fleet so that we have a sum by year
+corrcatch2 <- aggregate(cbind(BLL,COD,DAB,HAD,LEM,PLE,SOL,TUR,WHG,WIT) ~ year,data=corrcatch, FUN="sum")
 #####################################################################################
 #Make corr matrix (of either raw catches or corrected catches) 
 #####################################################################################
-usedat <- corrcatch[,names(corrcatch) %in% relevantspecies]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
+
+
+#calc differences
+corrcatch3 <- apply(corrcatch2,2,  FUN=diff)
+
+corrmatrix <- cor(corrcatch3[,-1],use="complete.obs")
+
+
+
+#usedat <- corrcatch[,names(corrcatch) %in% relevantspecies]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
+#usedat <- corrcatch[,names(corrcatch) %in% paste0(relevantspecies,"dif")]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
+
 
 #use either usedat(for raw catches, or effort corrected catches (tmpc) (in this case for ))
-corrmatrix <- cor(usedat,use="complete.obs")
+#corrmatrix <- cor(usedat,use="complete.obs")
 
 p2_j<-corrplot(corrmatrix,  col  =rev(adj_col2),
                diag=FALSE,
                method="color", type = "upper", order = "hclust",number.cex = 0.8,
-               cl.lim= c(-0.5,1),is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
+               cl.lim= c(-0.9,1),is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
                tl.col = "black", tl.srt = 90, na.label = "x",tl.cex = 1.1, tl.offset = 0.4) # Text label color and rotation
 
 mtext(text = "Species", side = 2, line = -4,  cex=1.3, at = 5.75 )
