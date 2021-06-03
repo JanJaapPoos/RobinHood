@@ -1,11 +1,15 @@
 library(lattice); library(rasterVis); library(latticeExtra);library(corrplot)
 library(gridExtra); library(dplyr); library(tidyr);library("RColorBrewer"); library(ggplot2)
 
-rootPath <- "C://Users/poos001/OneDrive - WageningenUR/projects/RobinHood"
+if(length(grep("coilin", getwd())) == 1){
+ rootPath <- ".."
+}else{
+    rootPath <- "C://Users/poos001/OneDrive - WageningenUR/projects/RobinHood"
+}
 
 #Read data (effort and landings)
-landings <- read.csv(file.path(rootPath,"data/stecf data/map__landings_by_rectangle_data.csv"), stringsAsFactors = F)
-effort <- read.csv(file.path(rootPath,"data/stecf data/effort_(hours_fished)_Full_Data_data.csv"), stringsAsFactors = F)
+landings <- read.csv(file.path(rootPath,"Data/STECF data/map__landings_by_rectangle_data.csv"), stringsAsFactors = F)
+effort <- read.csv(file.path(rootPath,"Data/STECF data/effort_(hours_fished)_Full_Data_data.csv"), stringsAsFactors = F)
 
 ##########################################
 # Which fleets-years effort are constant?
@@ -145,10 +149,14 @@ corrcatch2 <- aggregate(cbind(BLL,COD,DAB,HAD,LEM,PLE,SOL,TUR,WHG,WIT) ~ year,da
 
 
 #calc differences
-corrcatch3 <- apply(corrcatch2,2,  FUN=diff)
+##corrcatch3 <- apply(corrcatch2,2,  FUN=diff)
+## subset years up to 2011 where effort was constant for GN1
 
-corrmatrix <- cor(corrcatch3[,-1],use="complete.obs")
-
+corrcatch3 <- apply(subset(corrcatch2, year <= 2011),2,  FUN=diff)
+## correlation is from here
+plot(as.data.frame(corrcatch3[,-1]))
+## using Spearman more robust for time series
+corrmatrix <- cor(corrcatch3[,-1],use="complete.obs", method = "spearman")
 
 
 #usedat <- corrcatch[,names(corrcatch) %in% relevantspecies]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
@@ -166,6 +174,25 @@ p2_j<-corrplot(corrmatrix,  col  =rev(adj_col2),
 
 mtext(text = "Species", side = 2, line = -4,  cex=1.3, at = 5.75 )
 mtext(text = "Species", side = 1, cex=1.3,line = 3.5, at = 6 )
+
+
+## take a look at a realisation of such a correlated process
+library(mvtnorm)
+## standard deviations
+nspp <- nrow(corrmatrix)
+sd_diag <- diag(rep(0.05, nspp))
+S <- sd_diag %*% corrmatrix %*% sd_diag
+H <- 0.5 + apply(rmvnorm(20, rep(0, nspp), S), 2, cumsum)
+colnames(H) <- colnames(corrmatrix)
+matplot(H, type = "l")
+
+## correlation of the harvest rates - not sure what's up with colours here
+corrplot(cor(H),  col  =rev(adj_col2),
+         diag=FALSE,
+         method="color", type = "upper", order = "hclust",number.cex = 0.8,
+         cl.lim= c(-1,1),is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
+         tl.col = "black", tl.srt = 90, na.label = "x",tl.cex = 1.1, tl.offset = 0.4) # Text label color and rotation
+
 
 #####################################################################################
 # Save corrmatrix for use in Robin Hood code (6)  
