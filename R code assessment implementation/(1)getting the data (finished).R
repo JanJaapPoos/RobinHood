@@ -2,13 +2,13 @@
 ##---data input---------------------------------------------------------------------
 #define start year
 startyear <- 1975
-endyear <- 2018
+endyear <- 2023
 
 #####################################################################################
 ## Read Catches and indices data for data poor
 #####################################################################################
-#rootPath <- "m:/robinhood/"
-rootPath <- "C:/Users/jappi/Bureaublad/robinhood"
+rootPath <- "C:\\Users\\poos001\\OneDrive - Wageningen University & Research\\projects\\RobinHood"
+#rootPath <- "C:/Users/jappi/Bureaublad/robinhood"
 
 
 #####################################################################################
@@ -58,7 +58,7 @@ names(Cm)<-c("years","Turbot","Brill","Witch","Dab","Lemon sole")
 #######################################################################################
 ## Read F estimates from data rich assessments (ple, sol),same length as I )
 #######################################################################################
-allF <- read.csv(file.path(rootPath,"Data/F data rich/ple_sol_lem_wit_tur_cod_fishing mortalities.csv"), sep=";",stringsAsFactors = F)
+allF <- read.csv(file.path(rootPath,"Data/F data rich/ple_sol_lem_wit_tur_cod_fishing mortalities.csv"),stringsAsFactors = F)
 
 names(allF)[1] <- "years" 
 allF <- allF[allF$years>(startyear-1),]
