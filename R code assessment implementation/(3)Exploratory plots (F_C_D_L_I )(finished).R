@@ -62,17 +62,17 @@ ggplot(data = Fm_long,aes(x = Year, y = val ,colour= species, group=species))+
   ylab(expression(Fishing~mortality~(year^-1)))+
   geom_line(linetype="solid",size=1, alpha=0.4)+
   scale_colour_manual(values = c("#3B9AB2","#9EBD91","#E8C520","#E29E00","#F21A00"),labels=c("Cod (ages 2-4)","Haddock (ages 2-4)","Plaice (ages 2-6)","Sole (ages 2-6)","Whiting (ages 2-6)"))+
-  geom_point(size=2, aes(shape=species))+
+  #geom_point(size=2, aes(shape=species))+
   scale_shape_manual(values =rep(19,5),guide=F)+
   theme_bw()+
   #ggtitle("Fishing mortality etsimates from ICES")+
-  geom_hline(aes(yintercept=0.21),colour="#E8C520",linetype="dashed", size=1, alpha=0.6 )+ #plaice
-  geom_hline(aes(yintercept=0.202),colour="#E29E00",linetype="dashed", size=1, alpha=0.6 )+ #sole
-  geom_hline(aes(yintercept=0.31),colour="#3B9AB2",linetype="dashed" , size=1, alpha=0.6)+ #cod
-  geom_hline(aes(yintercept=0.172),colour="#F21A00",linetype="dashed", size=1, alpha=0.6 )+ #whg
-  geom_hline(aes(yintercept=0.194),colour= "#9EBD91",linetype="dashed", size=1, alpha=0.6 )+#haddock
-  scale_x_continuous(limits = c(1974, 2020),expand = c(0, 0.0), breaks = c(seq(1975, 2020, by = 5)))+
-  scale_y_continuous(limits = c(0.1, 1.1),expand = c(0, 0.0),breaks = c(0.1,seq(0.1, 1.1, by = 0.1)))+
+  geom_hline(aes(yintercept=0.152),colour="#E8C520",linetype="dashed", size=1, alpha=0.6 )+ #plaice
+  geom_hline(aes(yintercept=0.157),colour="#E29E00",linetype="dashed", size=1, alpha=0.6 )+ #sole
+  #geom_hline(aes(yintercept=0.31),colour="#3B9AB2",linetype="dashed" , size=1, alpha=0.6)+ #cod
+  geom_hline(aes(yintercept=0.68),colour="#F21A00",linetype="dashed", size=1, alpha=0.6 )+ #whg
+  geom_hline(aes(yintercept=0.174),colour= "#9EBD91",linetype="dashed", size=1, alpha=0.6 )+#haddock
+  scale_x_continuous(limits = c(1975, 2025), expand = c(0, 0.0), breaks = c(seq(1980, 2030, by = 10)))+
+  scale_y_continuous(limits = c(0.0, 1.3), expand = c(0, 0.0),breaks = c(0.1,seq(0.1, 1.3, by = 0.2)))+
   #My_Theme
   theme_light(base_size = 17)+
   theme(legend.position="bottom")+
