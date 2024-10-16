@@ -31,7 +31,7 @@ Fm_cut<- 1-exp(-Fm[2:6])
 #here we remove the start of the timeseries
 Fm_cut <- as.matrix(Fm_cut[(startcut+1):(dim(Fm_cut)[1]),])
 
-years <- 1975:2018
+years <- 1975:2023
 
 # number of data limited stocks
 print(mc  <- dim(Cm_cut)[2])

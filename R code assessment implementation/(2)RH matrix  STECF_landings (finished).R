@@ -4,7 +4,7 @@ library(gridExtra); library(dplyr); library(tidyr);library("RColorBrewer"); libr
 if(length(grep("coilin", getwd())) == 1){
  rootPath <- ".."
 }else{
-    rootPath <- "C://Users/poos001/OneDrive - WageningenUR/projects/RobinHood"
+    rootPath <- "C://Users/poos001/OneDrive - Wageningen University & Research/projects/RobinHood"
 }
 
 #Read data (effort and landings)
