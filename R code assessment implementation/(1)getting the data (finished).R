@@ -7,8 +7,8 @@ endyear <- 2023
 #####################################################################################
 ## Read Catches and indices data for data poor
 #####################################################################################
-rootPath <- "C:\\Users\\poos001\\OneDrive - Wageningen University & Research\\projects\\RobinHood"
-#rootPath <- "C:/Users/jappi/Bureaublad/robinhood"
+#rootPath <- "m:/robinhood/"
+rootPath <- "C:/Users/jappi/Bureaublad/robinhood"
 
 
 #####################################################################################
@@ -19,13 +19,12 @@ rootPath <- "C:\\Users\\poos001\\OneDrive - Wageningen University & Research\\pr
 filename <- "recalculated catches data and indices_only_mean_prop"
 
 alldat <-   read.csv(file.path(rootPath,"Data/landings and indices",paste0(filename,".csv")), stringsAsFactors = F)
-
+index_overview <- alldat[c(1:5),]
 names(alldat)[1] <- "years"
 
 # start all analyses in 1975, that's the first year with Bll landings
 alldat <- alldat[!is.na(alldat$years),]
-alldat <- alldat[alldat$years>(startyear-1),]
-alldat <- alldat[alldat$years<(endyear+1),]
+alldat <- alldat[alldat$years %in% startyear:endyear,]
 alldat[alldat==""] <- NA
 
 # Extract indices
@@ -37,7 +36,7 @@ Im$Ibll  <- as.numeric(Im$Ibll)/24
 Im$Itur <- (as.numeric(Im$Itur) *1491) /24
 
 Im_lemonsole<-read.csv(file.path(rootPath,"Data/landings and indices/lemon sole index calcs/Resulting lemon sole indices from IBTS.csv"), stringsAsFactors = F)
-Im_lemonsole<-Im_lemonsole[,2:4]
+Im_lemonsole<-Im_lemonsole[,-1]
 Im_lemonsole<-tidyr::spread(Im_lemonsole, Quarter, kgperhour.x)
 top_Im_lem<-cbind(c(1975:1979),rep(NA,5),rep(NA,5))
 colnames(top_Im_lem)<-names(Im_lemonsole)
@@ -47,6 +46,7 @@ Im$llem.3<-Im_lemonsole[1:44,3]
 Im
 colnames(Im)<-c("years","Itur","Ibll","Iwit","Iwit.1","Idab","Ilem","Ilem.1")
 Im
+
 # Extract catches
 Lm <- alldat[,names(alldat) %in% c("years","Ltur","Lbll", "Lwit","Ldab","Llem") ]
 names(Lm)<-c("years","Turbot","Brill","Witch","Dab","Lemon sole")
