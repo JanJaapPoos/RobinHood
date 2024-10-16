@@ -2,7 +2,13 @@
 library(tidyr); library(ggplot2); library(wesanderson); library(ggforce); 
 library("cowplot")
 
+if(length(grep("coilin", getwd())) == 1){
+  rootPath <- ".."
+}else{
+  rootPath <- "C://Users/poos001/OneDrive - Wageningen University & Research/projects/RobinHood"
+}
 
+load( file=file.path(rootPath,"Data/intermediate results/original data.Rdata"))
 ####--------------------------------------------------#plotting the data#--------------------------------
 ##get the data from R_script(...insert_name...)(getting the data)----
 ##------preliminary plots(fast and ugly)-------
@@ -22,7 +28,7 @@ Lm_long<-gather(Lm,key=species, value="Landings", -years)
 
 p <- ggplot(data = Lm_long, aes(x = years , y=as.numeric(Landings)/1000, colour=species))+
   ylab("Landings (1000 tonnes)") + xlab("Year") +
-  geom_line(linetype="solid",size=0.8, alpha=0.4)+
+  geom_line(linetype="solid", linewidth = 0.8, alpha=0.4)+
   geom_point(size=3, aes(shape=species))+
   scale_shape_manual(values = c( 16, 15,17, 18,0))+
   scale_colour_manual(values = c("#3B9AB2","#9EBD91","#E8C520","#E29E00","#F21A00"))
@@ -48,7 +54,6 @@ p+ theme_light(base_size = 20)
 #plot F's for actual visuals------
 #actual lines of F
 col<-wes_palette("Zissou1",10, type = "continuous")
-col
 
 Fm_long<-gather(Fm,key=species, value="val", -years)
 colnames(Fm_long)[names(Fm_long) == "years"]<-"Year"
@@ -65,7 +70,7 @@ ggplot(data = Fm_long,aes(x = Year, y = val ,colour= species, group=species))+
   #geom_point(size=2, aes(shape=species))+
   scale_shape_manual(values =rep(19,5),guide=F)+
   theme_bw()+
-  #ggtitle("Fishing mortality etsimates from ICES")+
+  #ggtitle("Fishing mortality estimates from ICES")+
   geom_hline(aes(yintercept=0.152),colour="#E8C520",linetype="dashed", size=1, alpha=0.6 )+ #plaice
   geom_hline(aes(yintercept=0.157),colour="#E29E00",linetype="dashed", size=1, alpha=0.6 )+ #sole
   #geom_hline(aes(yintercept=0.31),colour="#3B9AB2",linetype="dashed" , size=1, alpha=0.6)+ #cod
