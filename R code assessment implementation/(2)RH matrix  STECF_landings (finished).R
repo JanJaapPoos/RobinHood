@@ -60,24 +60,12 @@ lan           <- aggregate(Landings~ species, data=landings, FUN="sum")
 final <- merge(lan, lanbygear, by="species")
 final$frac <- final$Landings.y/final$Landings.x
 
-finalyear <- merge(lanyear, lanbygearyear, by=c("species","year"))
-finalyear$frac <- finalyear$Landings.y/finalyear$Landings.x
-
-finalyear_incl_veslen <- merge(lanyear, lanbygearveslenyear, by=c("species","year"))
-finalyear_incl_veslen$frac <- finalyear_incl_veslen$Landings.y/finalyear_incl_veslen$Landings.x
-finalyear_incl_veslen$gear_vl <- paste0(finalyear_incl_veslen$regulated.gear,finalyear_incl_veslen$vessel.length)
-
-finalyear_incl_rect <- merge(lanyear, lanbygearrectyear, by=c("species","year"))
-finalyear_incl_rect$frac <- finalyear_incl_rect$Landings.y/finalyear_incl_rect$Landings.x
-finalyear_incl_rect$gear_rect <- paste0(finalyear_incl_rect$regulated.gear,finalyear_incl_rect$rectangle)
+#finalyear <- merge(lanyear, lanbygearyear, by=c("species","year"))
+#finalyear$frac <- finalyear$Landings.y/finalyear$Landings.x
 
 cortest                   <- tidyr::spread(final[,c("regulated.gear","species","frac")],key= species, value=frac)
-cortestyear               <- tidyr::spread(finalyear[,c("regulated.gear","species","year","frac")],key= species, value=frac)
+#cortestyear               <- tidyr::spread(finalyear[,c("regulated.gear","species","year","frac")],key= species, value=frac)
 cortestyear_raw           <- tidyr::spread(lanbygearyear,key= species, value=Landings) 
-
-cortestyear_incl_veslen   <- tidyr::spread(finalyear_incl_veslen[,c("gear_vl","species","year","frac")],key= species, value=frac)
-cortestyear_incl_rect     <- tidyr::spread(finalyear_incl_rect[,c("gear_rect","species","year","frac")],key= species, value=frac)
-cortestyear_incl_rect_raw <- tidyr::spread(lanbygearrectyear,key= species, value=Landings) 
 
 #MAKE COLORS (NOTE THAT THE COL DEFINITION IS different FROM (3)PREL PLOTS)
 #NOTE THAT IF WE PUT THIS FIG IN THE MS, THEN CAPTION SHOULD EXPLAIN THAT ORDER IS BASED ON CLUSTERING (SEE ALSO ?CORRPLOT())
@@ -92,24 +80,24 @@ adj_col3<-c(col(200)[1:100]) #,col(100)[50:100])
 #FINAL FIGURES FOR PAPER
 ##########################################################################
 
-###convert data into dataframe for corrplot
+###convert final data into dataframe for corrplot
 ######here comes the second graph ##############-------
 
-dat_frame_final<-final[,c(1,3,5)]%>%spread(regulated.gear,frac)
-dat_frame_final<-cbind(dat_frame_final[,1], round(dat_frame_final[,-1],2))
-names_species<-unique(as.matrix(t(dat_frame_final))[1,])
+dat_frame_final <- final[,c(1,3,5)]%>%spread(regulated.gear,frac)
+dat_frame_final <- cbind(dat_frame_final[,1], round(dat_frame_final[,-1],2))
+names_species <- unique(as.matrix(t(dat_frame_final))[1,])
 
-new_matrix_final<-as.matrix(t(dat_frame_final))[-1,]
-colnames(new_matrix_final)<-names_species
-names_methods<-rownames(new_matrix_final)
+new_matrix_final <- as.matrix(t(dat_frame_final))[-1,]
+colnames(new_matrix_final) <- names_species
+names_methods <- rownames(new_matrix_final)
 
-new_matrix_final<-matrix(data = sapply(new_matrix_final, as.numeric), ncol = 10, nrow = 7)
-colnames(new_matrix_final)<-names_species
-rownames(new_matrix_final)<-names_methods
+new_matrix_final <- matrix(data = sapply(new_matrix_final, as.numeric), ncol = 10, nrow = 7)
+colnames(new_matrix_final) <- names_species
+rownames(new_matrix_final) <- names_methods
 
 par(mfrow=c(1,1))
 ####bij 800*550 -------------
-p1_j<-corrplot(new_matrix_final,col=rev(adj_col2),
+p1_j<-corrplot(new_matrix_final,
                diag=T,
                method="color", type = "full",number.cex = 0.8,
                cl.lim= c(0,1),is.corr = F, addCoef.col = "black",  # Add coefficient of correlation
@@ -129,41 +117,33 @@ rawcatch <- cortestyear_raw #alternative cortestyear_incl_rect_raw
 #####################################################################################
 par(mfrow=c(2,2))
 for (source in c("ref_corrected","raw")){
-  for (corrtype in c("pearson","spearman")){
-    if (source == "ref_corrected"){
-      
-      #if cortestyear_raw then option to divide by fleet/years with constant effort (defined by refgear): ugly loop
-      #that is what is done below: catches are divided by the cacthes of the ref gear. That one ends up as having only 1s
-      refgear <- "GN1"
-      for(ii in unique(rawcatch$regulated.gear)){
-        tmp <- rawcatch[rawcatch$regulated.gear==ii,names(rawcatch) %in% relevantspecies]/rawcatch[rawcatch$regulated.gear==refgear,names(rawcatch) %in% relevantspecies]
-        tmp <- cbind(rawcatch[rawcatch$regulated.gear==ii,!names(rawcatch) %in% relevantspecies],tmp)
-        if (ii ==unique(rawcatch$regulated.gear)[1]){
-          corrcatch <- tmp
-        }else{
-          corrcatch <- rbind(corrcatch,tmp)
-        }
+  if (source == "ref_corrected"){
+    #if cortestyear_raw then option to divide by fleet/years with constant effort (defined by refgear): ugly loop
+    #that is what is done below: catches are divided by the catches of the ref gear. That one ends up as having only 1s
+    refgear <- "GN1"
+    for(ii in unique(rawcatch$regulated.gear)){
+      tmp <- rawcatch[rawcatch$regulated.gear==ii,names(rawcatch) %in% relevantspecies]/rawcatch[rawcatch$regulated.gear==refgear,names(rawcatch) %in% relevantspecies]
+      tmp <- cbind(rawcatch[rawcatch$regulated.gear==ii,!names(rawcatch) %in% relevantspecies],tmp)
+      if (ii ==unique(rawcatch$regulated.gear)[1]){
+        corrcatch <- tmp
+      }else{
+        corrcatch <- rbind(corrcatch,tmp)
       }
-      
-      #sum multiplication factors of catches by fleet so that we have a sum by year
-      corrcatch2 <- aggregate(cbind(BLL,COD,DAB,HAD,LEM,PLE,SOL,TUR,WHG,WIT) ~ year,data=corrcatch, FUN="sum")
-      
-      #calc differences, subset years up to 2011 where effort was constant for GN1
-      corrcatch3 <- apply(subset(corrcatch2, year <= 2011),2,  FUN=diff)
-      ## correlation is from here
-      #plot(as.data.frame(corrcatch3[,-1]))
-      ## using Spearman more robust for time series
-      corrmatrix <- cor(corrcatch3[,-1],use="complete.obs", method = corrtype)
-      
-    } else {
-      
-      #use either usedat(for raw catches, or effort corrected catches (tmpc) (in this case for ))
-      usedat <-   rawcatch[,names(rawcatch) %in% relevantspecies] # alternative corrcatch[,names(corrcatch) %in% relevantspecies]#
-      #usedat <- corrcatch[,names(corrcatch) %in% paste0(relevantspecies,"dif")]# alternative rawcatch[,names(rawcatch) %in% relevantspecies]
-      corrmatrix <- cor(usedat,use="complete.obs", method = corrtype)
+    }
+    #sum multiplication factors of catches by fleet so that we have a sum by year
+    corrcatch2 <- aggregate(cbind(BLL,COD,DAB,HAD,LEM,PLE,SOL,TUR,WHG,WIT) ~ year,data=corrcatch, FUN="sum")
     
-      }
-    p2_j<-corrplot(corrmatrix,  col=rev(adj_col2[1:150]),
+    #calc differences, subset years up to 2011 where effort was constant for GN1
+    corrcatch3 <- apply(subset(corrcatch2, year <= 2011),2,  FUN=diff)
+    usedat <- corrcatch3[,-1]
+    ## correlation is from here
+   
+  } else {    #use raw catches
+    usedat <-   rawcatch[,names(rawcatch) %in% relevantspecies] # alternative corrcatch[,names(corrcatch) %in% relevantspecies]
+  }
+  for (corrtype in c("pearson","spearman")){
+   corrmatrix <- cor(usedat,use="complete.obs", method = corrtype)
+   p2_j<-corrplot(corrmatrix,  col=rev(adj_col2[1:150]),
                diag=FALSE,
                method="color", type = "upper", order = "hclust",number.cex = 0.8,
                cl.lim= c(min(corrmatrix),1), is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
@@ -174,6 +154,32 @@ for (source in c("ref_corrected","raw")){
     mtext(text = "Species", side = 1, cex=1.3,line = 3.5, at = 6 )
   }
 }
+
+
+#####################################################################################
+#Alternative, calc correlations per year and average
+#####################################################################################
+
+corarray <- array(NA,dim=c(10,10,length(unique(rawcatch$year))), dimnames=list("sp1"=colnames(rawcatch[3:12]),"sp2"=colnames(rawcatch[3:12]), years=unique(rawcatch$years) ) )
+ix <- 1
+for(ii in unique(rawcatch$year)){
+      corarray[,,ix] <- cor(subset(rawcatch, year==ii)[,names(rawcatch) %in% relevantspecies],use="complete.obs", method = corrtype)
+      ix = ix + 1;
+}
+
+corrmatrix <- apply(corarray,c(1,2), "mean")
+
+p2_j<-corrplot(corrmatrix,  col=rev(adj_col2[1:150]),
+                   diag=FALSE,
+                   method="color", type = "upper", order = "hclust",number.cex = 0.8,
+                   cl.lim= c(min(corrmatrix),1), is.corr = FALSE, addCoef.col = "black",  # Add coefficient of correlation
+                   tl.col = "black", tl.srt = 90, na.label = "x",tl.cex = 1.1, tl.offset = 0.4, # Text label color and rotation
+                   main="alternative per year")
+    
+mtext(text = "Species", side = 2, line = -4,  cex=1.3, at = 5.75 )
+mtext(text = "Species", side = 1, cex=1.3,line = 3.5, at = 6 )
+
+
 
 ## take a look at a realisation of such a correlated process
 library(mvtnorm)
