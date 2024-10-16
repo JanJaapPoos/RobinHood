@@ -120,19 +120,21 @@ Lm <- unname(as.data.frame(lapply(c("tur","bll", "wit","dab","lem"), function(x)
 Lm$years <- startyear:endyear
 names(Lm) <- c("Ltur","Lbll", "Lwit","Ldab","Llem","years")
 Lm <- Lm[,c(6,1:5)]
+names(Lm)<-c("years","Turbot","Brill","Witch","Dab","Lemon sole")
 
 #create Dm
 Dm <- unname(as.data.frame(lapply(c("tur","bll", "wit","dab","lem"), function(x) extract_cols(x, "Discards"))))
 Dm$years <- startyear:endyear
 names(Dm) <- c("Dtur","Dbll", "Dwit","Ddab","Dlem","years")
 Dm <- Dm[,c(6,1:5)]
+names(Dm)<-c("years","Turbot","Brill","Witch","Dab","Lemon sole")
 
 #create Cm
 Cm <- unname(as.data.frame(lapply(c("tur","bll", "wit","dab","lem"), function(x) extract_cols(x, "Catches"))))
 Cm$years <- startyear:endyear
 names(Cm) <- c("Ctur","Cbll", "Cwit","Cdab","Clem","years")
 Cm <- Cm[,c(6,1:5)]
-
+names(Cm)<-c("years","Turbot","Brill","Witch","Dab","Lemon sole")
 
 #create Index df
 Im <- unname(as.data.frame(lapply(c("tur","bll", "wit","dab","lem"), function(x) extract_cols(x, "Survey"))))
